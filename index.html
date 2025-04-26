@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iCloud Contact Manager</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico">
+</head>
+<body>
+  <header>
+    <h1>Contact Manager</h1>
+    <button id="darkModeToggle">☀️ / 🌙</button>
+  </header>
+
+  <nav>
+    <button id="createTab" class="active">Create Contact</button>
+    <button id="manageTab">Manage Contacts</button>
+  </nav>
+
+  <main>
+    <!-- CREATE CONTACT SECTION -->
+    <section id="createContact">
+      <form id="contactForm">
+        <div class="form-group">
+          <label>First Name:</label>
+          <input type="text" id="firstName" required>
+        </div>
+        <div class="form-group">
+          <label>Last Name:</label>
+          <input type="text" id="lastName" required>
+        </div>
+        <div class="form-group">
+          <label>Company:</label>
+          <input type="text" id="company">
+        </div>
+        <div class="form-group">
+          <label>Phone 1:</label>
+          <input type="text" id="phone1" required>
+        </div>
+        <div class="form-group">
+          <label>Phone 2:</label>
+          <input type="text" id="phone2">
+        </div>
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" id="email">
+        </div>
+        <div class="form-group">
+          <label>Address:</label>
+          <input type="text" id="address">
+        </div>
+        <div class="form-group">
+          <label>Birthday (DD/MM/YYYY):</label>
+          <input type="text" id="birthday" placeholder="DD/MM/YYYY">
+        </div>
+        <div class="form-group">
+          <label>Category:</label>
+          <select id="category">
+            <option value="Family">Family</option>
+            <option value="Friends">Friends</option>
+            <option value="Work">Work</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Profile Photo:</label>
+          <input type="file" id="photo" accept="image/*">
+        </div>
+
+        <button type="submit" id="saveButton">Save Contact</button>
+      </form>
+    </section>
+
+    <!-- MANAGE CONTACTS SECTION -->
+    <section id="manageContacts" style="display:none;">
+      <div class="manage-header">
+        <input type="file" id="vcfInput" accept=".vcf">
+        <button id="deleteSelected">Delete Selected</button>
+        <button id="exportCsv">Export CSV</button>
+        <button id="exportVcf">Export VCF</button>
+      </div>
+      <table id="contactsTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Birthday</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Contacts will be loaded here -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
