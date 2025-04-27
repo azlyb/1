@@ -1,6 +1,6 @@
-// ======================
-// TAB SWITCHING
-// ======================
+// ============================
+// UI TAB SWITCHING
+// ============================
 const createTab = document.getElementById('createTab');
 const manageTab = document.getElementById('manageTab');
 const createContact = document.getElementById('createContact');
@@ -20,25 +20,29 @@ manageTab.addEventListener('click', () => {
   createContact.style.display = 'none';
 });
 
-// ======================
+// ============================
 // DARK MODE
-// ======================
+// ============================
 const darkModeToggle = document.getElementById('darkModeToggle');
 darkModeToggle.addEventListener('click', () => {
   document.body.classList.toggle('dark-mode');
 });
 
-// ======================
+// ============================
 // HELPER FUNCTIONS
-// ======================
+// ============================
 
-// Capitalize helper
-function capitalize(word) {
-  if (!word) return '';
-  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+// Capitalize each word in a string
+function capitalizeEachWord(sentence) {
+  if (!sentence) return '';
+  return sentence
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
-// Birthday input format (DD/MM/YYYY)
+// Format birthday input as DD/MM/YYYY
 const birthdayInput = document.getElementById('birthday');
 birthdayInput.addEventListener('input', (e) => {
   let value = e.target.value.replace(/\D/g, '');
@@ -49,7 +53,7 @@ birthdayInput.addEventListener('input', (e) => {
 
 // Format Malaysian phone numbers
 function formatPhone(phone) {
-  phone = phone.replace(/\D/g, '');
+  phone = phone.replace(/\D/g, ''); // Remove non-digits
   if (phone.startsWith('601')) {
     return '+' + phone;
   } else if (phone.startsWith('1')) {
@@ -58,157 +62,104 @@ function formatPhone(phone) {
   return phone;
 }
 
-// ======================
+// ============================
 // SAVE CONTACT (CREATE CONTACT SECTION)
-// ======================
+// ============================
 document.getElementById('saveButton').addEventListener('click', () => {
   const contact = {
-    firstName: capitalize(document.getElementById('firstName').value.trim()),
-    lastName: capitalize(document.getElementById('lastName').value.trim()),
-    company: capitalize(document.getElementById('company').value.trim()),
-    phone1: formatPhone(document.getElementById('phone1').value.trim()),
-    phone2: formatPhone(document.getElementById('phone2').value.trim()),
+    firstName: capitalizeEachWord(document.getElementById('firstName').value.trim()),
+    lastName: capitalizeEachWord(document.getElementById('lastName').value.trim()),
+    company: capitalizeEachWord(document.getElementById('company').value.trim()),
+    phone1: document.getElementById('phone1').value.trim().replace(/\D/g, ''),
+    phone2: document.getElementById('phone2').value.trim().replace(/\D/g, ''),
     email: document.getElementById('email').value.trim(),
-    address: document.getElementById('address').value.trim(),
+    address: capitalizeEachWord(document.getElementById('address').value.trim()),
     birthday: document.getElementById('birthday').value.trim(),
     category: document.getElementById('category').value,
-    photo: ""
+    photo: "" // photo handling later if needed
   };
 
   fetch('http://localhost:3000/contacts', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(contact)
   })
   .then(response => response.json())
   .then(data => {
     console.log('Success:', data);
     alert('Contact saved successfully!');
-    document.getElementById('contactForm').reset();
     loadContacts();
+    document.getElementById('contactForm').reset();
   })
-  .catch(error => {
+  .catch((error) => {
     console.error('Error:', error);
     alert('Failed to save contact.');
   });
 });
 
-// ======================
+// ============================
 // MANAGE CONTACTS SECTION
-// ======================
+// ============================
 
-// Load contacts into Manage Table
-function loadContacts() {
-  fetch('http://localhost:3000/contacts')
-    .then(response => response.json())
-    .then(contacts => {
-      const tbody = document.querySelector('#contactsTable tbody');
-      tbody.innerHTML = '';
-      contacts.forEach(contact => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><input type="checkbox" data-id="${contact.id}"></td>
-          <td>${contact.firstName} ${contact.lastName}</td>
-          <td>${contact.phone1}</td>
-          <td>${contact.email}</td>
-          <td>${contact.category}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(error => console.error('Failed to load contacts:', error));
-}
-
-// Auto-load when page ready
-document.addEventListener('DOMContentLoaded', () => {
-  loadContacts();
-});
-
-// Handle VCF Upload
+// Dummy VCF file upload placeholder
 document.getElementById('vcfInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const text = e.target.result;
-      const contacts = parseVCF(text);
-      if (contacts.length > 0) {
-        contacts.forEach(contact => {
-          fetch('http://localhost:3000/contacts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(contact)
-          });
-        });
-        alert('VCF contacts uploaded successfully!');
-        loadContacts();
-      } else {
-        alert('No valid contacts found in VCF.');
-      }
-    };
-    reader.readAsText(file);
+    alert('VCF File uploaded: ' + file.name);
+    // Later bonus: parse VCF and show contacts
   }
 });
 
-// Parse simple VCF content
-function parseVCF(text) {
-  const lines = text.split('\n');
-  const contacts = [];
-  let current = {};
-  lines.forEach(line => {
-    if (line.startsWith('FN:')) {
-      current.firstName = line.replace('FN:', '').split(' ')[0];
-      current.lastName = line.replace('FN:', '').split(' ')[1] || '';
-    } else if (line.startsWith('TEL:')) {
-      current.phone1 = formatPhone(line.replace('TEL:', ''));
-    } else if (line.startsWith('EMAIL:')) {
-      current.email = line.replace('EMAIL:', '');
-    } else if (line.startsWith('END:VCARD')) {
-      contacts.push({
-        firstName: capitalize(current.firstName),
-        lastName: capitalize(current.lastName),
-        company: '',
-        phone1: current.phone1 || '',
-        phone2: '',
-        email: current.email || '',
-        address: '',
-        birthday: '',
-        category: 'Friends',
-        photo: ''
-      });
-      current = {};
-    }
-  });
-  return contacts;
-}
-
-// Dummy delete selected
+// Dummy Delete Selected Contacts
 document.getElementById('deleteSelected').addEventListener('click', () => {
-  const selected = document.querySelectorAll('#contactsTable tbody input[type="checkbox"]:checked');
-  selected.forEach(cb => {
-    const id = cb.getAttribute('data-id');
-    fetch(`http://localhost:3000/contacts/${id}`, {
-      method: 'DELETE'
-    }).then(() => {
-      loadContacts();
-    });
-  });
-  alert('Deleted selected contacts!');
+  alert('Selected contacts deleted! 🚀 (Placeholder)');
 });
 
-// Dummy export
+// Dummy Export CSV
 document.getElementById('exportCsv').addEventListener('click', () => {
-  alert('Exported as CSV! 🚀 (Coming soon)');
+  alert('Exported as CSV! 🚀 (Placeholder)');
 });
 
+// Dummy Export VCF
 document.getElementById('exportVcf').addEventListener('click', () => {
-  alert('Exported as VCF! 🚀 (Coming soon)');
+  alert('Exported as VCF! 🚀 (Placeholder)');
 });
 
-// Select all checkbox
+// Select All checkbox
 const selectAll = document.getElementById('selectAll');
 selectAll.addEventListener('change', (e) => {
   document.querySelectorAll('#contactsTable tbody input[type="checkbox"]').forEach(cb => {
     cb.checked = e.target.checked;
   });
 });
+
+// ============================
+// LOAD CONTACTS FUNCTION (OPTIONAL CALL)
+// ============================
+function loadContacts() {
+  fetch('http://localhost:3000/contacts')
+    .then(response => response.json())
+    .then(data => {
+      const tbody = document.querySelector('#contactsTable tbody');
+      tbody.innerHTML = '';
+
+      data.forEach((contact, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="checkbox" data-index="${index}"></td>
+          <td>${contact.firstName}</td>
+          <td>${contact.lastName}</td>
+          <td>${contact.phone1}</td>
+          <td>${contact.phone2}</td>
+          <td>${contact.email}</td>
+          <td>${contact.address}</td>
+          <td>${contact.birthday}</td>
+          <td>${contact.category}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    })
+    .catch(error => console.error('Error loading contacts:', error));
+}
